@@ -41,7 +41,6 @@
 
 // //PORT
 
-
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
@@ -82,37 +81,3 @@ app.get('', (req, res) => {
 
 // Export the app as a serverless function
 module.exports = app;
-// REST OBJECT
-const app = express();
-
-app.use(limiter);
-app.use(cors());
-app.use(express.json());
-app.use(morgan("dev"));
-app.use(session({
-    secret: process.env.JWT_SECRET,
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false }
-}));
-
-// ROUTES
-app.use("/api/v1/auth", require("./routes/userRoute"));
-app.use("/api/v1/post", require("./routes/postRoute"));
-app.use("/api/v1/followunfollow", require("./routes/followunfollwoRoute"));
-
-app.get('', (req, res) => {
-    res.status(200).json({
-        success: true,
-        message: "welcome back manin"
-    });
-});
-
-// Export the app as a serverless function (for deployment on platforms like Vercel)
-module.exports = app;
-// const PORT = process.env.PORT || 8080;
-
-// //listen
-// app.listen(PORT, () => {
-//   console.log(`Server Runnning ${PORT}`.bgGreen.white);
-// });
