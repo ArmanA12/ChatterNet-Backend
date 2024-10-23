@@ -40,3 +40,5 @@ app.get('',(req,res)=>{
 })
 
 //PORT
+module.exports = app;
+
