@@ -12,8 +12,8 @@ const transporter = nodemailer.createTransport({
 // Wrappers Email template for some forms
 async function sendMail(to, subject, text) {
     const mailOptions = {
-        name: 'IntexFair',
-        from: 'intexfair@worldexindia.com',
+        name: 'ChatterNet',
+        from: 'mdarmanshekh4@gmail.com',
         to,
         subject,
         text,

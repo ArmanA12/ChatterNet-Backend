@@ -8,43 +8,75 @@ const userModal = require('../models/userModal');
 
 // Configure Cloudinary
 cloudinary.config({
-  cloud_name: '',
-  api_key: '',
-  api_secret: '',
+  cloud_name: 'dl2eivpdr',
+  api_key: '762171859519419',
+  api_secret: 'yXot9d_JIj02pwSiXntrJe6xJrY',
 });
+
+
+
+
+
 
 const createPost = async (req, res) => {
   try {
-    console.log(req.body,"request")
+    console.log(req.body, "request");
 
     const { title, description, userID } = req.body;
     const image = req.file;
-    const result = await cloudinary.uploader.upload(image.path);
-    console.log(result, "c;ouadinary res")
 
-    // Create a new post
+    // Validate input
+    if (!userID) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
+
+    if (!title || !description) {
+      return res.status(400).json({ message: 'Title and description are required' });
+    }
+
+    if (!image) {
+      return res.status(400).json({ message: 'No image uploaded' });
+    }
+
+    // Function to upload image to Cloudinary
+    const uploadToCloudinary = () => {
+      return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { resource_type: 'image' },
+          (error, result) => {
+            if (error) {
+              return reject(error);
+            }
+            resolve(result);
+          }
+        );
+        stream.end(image.buffer);
+      });
+    };
+
+    const result = await uploadToCloudinary();
+    console.log(result, "cloudinary response");
+
     const post = new postModel({
       title,
       description,
-      postedBy:userID,
+      postedBy: userID,
       imageUrl: result.secure_url,
-
     });
 
     await post.save();
-    
+
     res.status(201).json({
       message: 'Post created successfully',
       post,
     });
   } catch (error) {
-    console.error(error);
+    console.error(error, "console while creating post");
     res.status(500).json({
       message: 'Internal server error',
     });
   }
 };
-
 
 
 const uploadVideoPost = async (req, res) => {
