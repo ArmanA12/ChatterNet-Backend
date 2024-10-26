@@ -39,9 +39,6 @@ app.get('',(req,res)=>{
     })
 })
 
-<<<<<<< HEAD
-=======
 //PORT
 module.exports = app;
->>>>>>> 319871994977f25db33febe88846c446cf32bd0e
 
