@@ -154,6 +154,7 @@ const uploadProfileImage = async (req, res) => {
     const userID = req.body.userID;
     const image = req.file; // Access the uploaded file
 
+    // Validate input
     if (!userID) {
       return res.status(400).json({ message: 'User ID is required' });
     }
@@ -162,10 +163,26 @@ const uploadProfileImage = async (req, res) => {
       return res.status(400).json({ message: 'No image uploaded' });
     }
 
-    // Upload to Cloudinary using the file path
-    const result = await cloudinary.uploader.upload(image.path, {
-      resource_type: 'image', // Ensure it's an image
-    });
+    // Function to upload image to Cloudinary
+    const uploadToCloudinary = () => {
+      return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { resource_type: 'image' },
+          (error, result) => {
+            if (error) {
+              return reject(error);
+            }
+            resolve(result);
+          }
+        );
+        stream.end(image.buffer);
+      });
+    };
+
+    // Upload the image and get the result
+    const result = await uploadToCloudinary();
+
+    // Update user profile with the new image URL
     const user = await userModel.findByIdAndUpdate(
       userID,
       { profileImageURL: result.secure_url },
@@ -181,11 +198,10 @@ const uploadProfileImage = async (req, res) => {
       user,
     });
   } catch (error) {
-    console.error(error);
+    console.error('Error uploading profile image:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
-
 
 
 const getAllPost = async (req, res) => {
