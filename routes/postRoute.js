@@ -12,7 +12,8 @@ getAllUserSavedPost,
 getAllUserLkedPost,
 uploadVideoPost,
 getAllVideoPosts,
-shareCount
+shareCount,
+deleteAllSavedPosts
 } = require('../controllers/postController');
 const upload = require('../middleware/multer.middleware');
 
@@ -37,6 +38,10 @@ router.get('/getPostsByUser', getPostsByUser);
 router.get('/deleteUserPost', deleteUserPost);
 router.get('/getAllUserSavedPost', getAllUserSavedPost);
 router.get('/getAllUserLkedPost', getAllUserLkedPost);
+
+
+router.get('/deleteAllSavedPosts', deleteAllSavedPosts);
+
 
 
 
