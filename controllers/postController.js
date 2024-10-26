@@ -82,13 +82,43 @@ const createPost = async (req, res) => {
 const uploadVideoPost = async (req, res) => {
   try {
     const { title, description, userID } = req.body;
-     console.log(title, description, userID, "videp")
+    console.log(title, description, userID, "video");
+
+    // Validate input
+    if (!userID) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
+
+    if (!title || !description) {
+      return res.status(400).json({ message: 'Title and description are required' });
+    }
+
     const video = req.file;
 
-    const result = await cloudinary.uploader.upload(video.path, {
-      resource_type: 'video',
-    });
+    if (!video) {
+      return res.status(400).json({ message: 'No video uploaded' });
+    }
 
+    // Function to upload video to Cloudinary
+    const uploadToCloudinary = () => {
+      return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { resource_type: 'video' },
+          (error, result) => {
+            if (error) {
+              return reject(error);
+            }
+            resolve(result);
+          }
+        );
+        stream.end(video.buffer);
+      });
+    };
+
+    // Upload the video and get the result
+    const result = await uploadToCloudinary();
+
+    // Create a new post
     const post = new postModel({
       title,
       description,
@@ -110,7 +140,6 @@ const uploadVideoPost = async (req, res) => {
     });
   }
 };
-
 
 
 
