@@ -40,7 +40,7 @@ router.get('/getAllUserSavedPost', getAllUserSavedPost);
 router.get('/getAllUserLkedPost', getAllUserLkedPost);
 
 
-router.get('/deleteAllSavedPosts', deleteAllSavedPosts);
+router.delete('/deleteAllSavedPosts', deleteAllSavedPosts);
 
 
 
