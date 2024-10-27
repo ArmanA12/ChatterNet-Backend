@@ -45,33 +45,59 @@
 
 
 
-// server.js
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const http = require('http');
-const { Server } = require('socket.io');
-const mongoose = require('mongoose');
-const Message = require('./models/chatModel'); // Import your Message model
+const express = require("express");
+const cors = require("cors");
+const dotenv = require("dotenv");
+const http = require("http");
+const { Server } = require("socket.io");
+const connectDB = require("./config/db");
 
 dotenv.config();
+connectDB();
 
 const app = express();
-app.use(cors());
+app.use(cors({
+    origin: 'https://your-frontend-url.vercel.app', // Update this with your actual frontend URL
+    methods: ["GET", "POST"],
+    credentials: true,
+}));
 app.use(express.json());
 
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+// Routes setup
+app.use("/api/v1/auth", require("./routes/userRoute"));
+app.use("/api/v1/post", require("./routes/postRoute"));
+app.use("/api/v1/followunfollow", require("./routes/followunfollowRoute"));
 
+app.get('/', (req, res) => {
+    res.status(200).json({
+        success: true,
+        message: "Welcome to the chat application!"
+    });
+});
+
+// Create HTTP server and integrate Socket.IO
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
 
+// Socket.IO logic
 io.on("connection", (socket) => {
     console.log("A user connected:", socket.id);
+
+    socket.on("joinRoom", (chatId) => {
+        socket.join(chatId);
+        console.log(`User joined chat room: ${chatId}`);
+    });
 
     socket.on("sendMessage", async (data) => {
         const { chatId, senderId, receiverId, message } = data;
 
         try {
+            const Message = require('./models/chatModel');
             const newMessage = new Message({ chatId, senderId, receiverId, message });
             await newMessage.save();
             io.to(chatId).emit("message", newMessage);
@@ -85,6 +111,7 @@ io.on("connection", (socket) => {
     });
 });
 
+// PORT
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
