@@ -45,28 +45,40 @@
 
 
 
+// Import dependencies
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const http = require("http");
-const { Server } = require("socket.io");
+const session = require('express-session');
+const morgan = require("morgan");
+const http = require("http");  // Required to create the server for both Express and Socket.IO
+const { Server } = require("socket.io"); // Import Socket.IO
 const connectDB = require("./config/db");
 
+// Initialize environment variables
 dotenv.config();
+
+// Connect to MongoDB
 connectDB();
 
+// REST OBJECT
 const app = express();
-app.use(cors({
-    origin: '*', // Update this with your actual frontend URL
-    methods: ["GET", "POST"],
-    credentials: true,
-}));
-app.use(express.json());
 
-// Routes setup
+// Middleware setup
+app.use(cors());
+app.use(express.json());
+app.use(morgan("dev"));
+app.use(session({
+    secret: process.env.JWT_SECRET,
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false } 
+}));
+
+// Routes
 app.use("/api/v1/auth", require("./routes/userRoute"));
 app.use("/api/v1/post", require("./routes/postRoute"));
-app.use("/api/v1/followunfollow", require("./routes/followunfollowRoute"));
+app.use("/api/v1/followunfollow", require("./routes/followunfollwoRoute"));
 
 app.get('/', (req, res) => {
     res.status(200).json({
@@ -76,10 +88,10 @@ app.get('/', (req, res) => {
 });
 
 // Create HTTP server and integrate Socket.IO
-const server = http.createServer(app);
+const server = http.createServer(app);  // Create server with Express app
 const io = new Server(server, {
     cors: {
-        origin: "*",
+        origin: "*", // Adjust this to restrict access
         methods: ["GET", "POST"]
     }
 });
@@ -88,18 +100,23 @@ const io = new Server(server, {
 io.on("connection", (socket) => {
     console.log("A user connected:", socket.id);
 
+    // Join a specific chat room
     socket.on("joinRoom", (chatId) => {
         socket.join(chatId);
         console.log(`User joined chat room: ${chatId}`);
     });
 
+    // Handle sending messages
     socket.on("sendMessage", async (data) => {
         const { chatId, senderId, receiverId, message } = data;
 
         try {
-            const Message = require('./models/chatModel');
+            // Save the message to MongoDB
+            const Message = require('./models/chatModel');  // Import the Message model here
             const newMessage = new Message({ chatId, senderId, receiverId, message });
             await newMessage.save();
+
+            // Emit the message to users in the chat room
             io.to(chatId).emit("message", newMessage);
         } catch (error) {
             console.error("Error saving message:", error);
