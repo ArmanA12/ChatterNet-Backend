@@ -4,6 +4,8 @@ const { generateOTP } = require("../helpers/generateOPT");
 const JWT = require("jsonwebtoken");
 const { sendMail } = require("../helpers/emailSender");
 const cloudinary = require('cloudinary').v2;
+const ChatModal = require('../models/chatModel');
+const chatModel = require("../models/chatModel");
 
 
 
@@ -293,10 +295,35 @@ const login = async (req, res) => {
       });
     }
   };
+
+
+
+
+    const sendMessage = async (req, res) => {
+      const { chatId, senderId, receiverId, message } = req.body;
+
+      if (!chatId || !senderId || !receiverId || !message) {
+          return res.status(400).json({ success: false, message: "All fields are required" });
+      }
   
+      try {
+          // Save the message to MongoDB
+          const newMessage = new chatModel({ chatId, senderId, receiverId, message });
+          await newMessage.save();
+  
+          // Respond with the saved message
+          res.status(201).json({ success: true, message: newMessage });
+      } catch (error) {
+          console.error("Error saving message:", error);
+          res.status(500).json({ success: false, message: "Internal server error" });
+      }
+  
+    }
 
 
 
 
 
-module.exports = {userRegister, login, verifyOTP, resendOTP, userProfile, forgotPassword}
+module.exports = {userRegister, login, verifyOTP, resendOTP, userProfile, forgotPassword,
+  sendMessage
+}

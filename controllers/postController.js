@@ -401,22 +401,7 @@ const deleteUserPost = async (req, res) => {
 
 
 
-  const deleteAllSavedPosts = async (req, res) => {
-    try {
-      // Delete all saved posts from the collection
-      const result = await Savedpost.deleteMany({});
   
-      // Check if any documents were deleted
-      if (result.deletedCount === 0) {
-        return res.status(404).json({ message: 'No saved posts found to delete' });
-      }
-  
-      res.status(200).json({ message: 'All saved posts deleted successfully' });
-    } catch (error) {
-      console.error('Error deleting saved posts:', error);
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  };
 
 const unsavedPosts = async (req, res) => {
     try {
@@ -514,8 +499,7 @@ module.exports = {
     getAllUserLkedPost,
     uploadVideoPost,
     getAllVideoPosts,
-    shareCount,
-    deleteAllSavedPosts
+    shareCount
 
   
  }
