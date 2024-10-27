@@ -46,15 +46,13 @@
 
 
 // Import dependencies
-// server.js
-
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const session = require('express-session');
 const morgan = require("morgan");
-const http = require("http");
-const { Server } = require("socket.io");
+const http = require("http");  // Required to create the server for both Express and Socket.IO
+const { Server } = require("socket.io"); // Import Socket.IO
 const connectDB = require("./config/db");
 
 // Initialize environment variables
@@ -80,7 +78,7 @@ app.use(session({
 // Routes
 app.use("/api/v1/auth", require("./routes/userRoute"));
 app.use("/api/v1/post", require("./routes/postRoute"));
-app.use("/api/v1/followunfollow", require("./routes/followunfollowRoute"));
+app.use("/api/v1/followunfollow", require("./routes/followunfollwoRoute"));
 
 app.get('/', (req, res) => {
     res.status(200).json({
@@ -90,10 +88,10 @@ app.get('/', (req, res) => {
 });
 
 // Create HTTP server and integrate Socket.IO
-const server = http.createServer(app);
+const server = http.createServer(app);  // Create server with Express app
 const io = new Server(server, {
     cors: {
-        origin: "*",
+        origin: "*", // Adjust this to restrict access
         methods: ["GET", "POST"]
     }
 });
@@ -113,7 +111,8 @@ io.on("connection", (socket) => {
         const { chatId, senderId, receiverId, message } = data;
 
         try {
-            const Message = require('./models/chatModel');
+            // Save the message to MongoDB
+            const Message = require('./models/chatModel');  // Import the Message model here
             const newMessage = new Message({ chatId, senderId, receiverId, message });
             await newMessage.save();
 
